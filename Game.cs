@@ -6,9 +6,11 @@ namespace MahjongEngine
     public class Game
     {
         private Tiles TilePool;
+        protected int numDuplicatesPerTile;
 
         public Game()
         {
+            numDuplicatesPerTile = 4;
             TilePool = new Tiles();
         }
 
@@ -20,7 +22,7 @@ namespace MahjongEngine
 
         public virtual void GenerateTiles()
         {
-            for(int iterations = 0; iterations < 4; iterations++)
+            for(int iterations = 0; iterations < numDuplicatesPerTile; iterations++)
             {
                 for(Suit suit = Suit.Unknown + 1; suit <= Suit.Max; suit++)
                 {

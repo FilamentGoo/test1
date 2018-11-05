@@ -52,6 +52,13 @@ namespace MahjongEngine
         Max = Red,
     }
 
+    public enum TileDisplayStyle 
+    {
+        Tenhou,
+        English,
+        Japanese
+    }
+
     public class Tile : IEquatable<Tile>, IComparable<Tile>
     {
         public static readonly int TileMinValue = 1;
@@ -60,6 +67,7 @@ namespace MahjongEngine
         public readonly int TileValue;
         public readonly bool IsRedDora;
         public bool IsDora { get; set; }
+        public static TileDisplayStyle DisplayStyle = TileDisplayStyle.English;
 
         public bool IsTerminal 
         { 
@@ -133,6 +141,43 @@ namespace MahjongEngine
             return (int)(this.Suit - other.Suit) * 100 +
                    (int)(this.TileValue - other.TileValue) *10 +
                    (Convert.ToInt32(this.IsRedDora) - Convert.ToInt32(other.IsRedDora));
+        }
+
+        public override string ToString()
+        {
+            return $"{TileValueToString()}{SuitExtensions.ToShortenedString(Suit)}";
+        }
+
+        public string TileValueToString()
+        {
+            if(Suit != Suit.Jihai ||
+                DisplayStyle == TileDisplayStyle.Tenhou)
+            {
+                return TileValue.ToString();
+            }
+            else
+            {
+                Honor honorValue = (Honor)TileValue;
+                switch(honorValue)
+                {
+                    case Honor.East:
+                        return "E";
+                    case Honor.South:
+                        return "S";
+                    case Honor.West:
+                        return "W";
+                    case Honor.North:
+                        return "N";
+                    case Honor.Green:
+                        return "G";
+                    case Honor.Red:
+                        return "R";
+                    case Honor.White:
+                        return "W";
+                    default:
+                        throw new InvalidOperationException($"Tried to print invalid honor value {this.ToString()}");
+                }
+            }
         }
     }
 

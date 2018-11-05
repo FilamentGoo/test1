@@ -44,7 +44,7 @@ namespace MahjongEngine
                     outputSuit = false;
                 }
 
-                sb.Append(TileCollection[i].TileValue.ToString());
+                sb.Append(TileCollection[i].TileValueToString());
                 if(outputSuit)
                 {
                     sb.Append(SuitExtensions.ToShortenedString(TileCollection[i].Suit));
