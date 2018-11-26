@@ -35,6 +35,38 @@ namespace MahjongEngine
         }
     }
 
+    public enum Wind
+    {
+        Unknown,
+        East,
+        South,
+        West,
+        North,
+        Max
+    }
+
+    public enum Dragon
+    {
+        Unknown,
+        White,
+        Green,
+        Red,
+        Max
+    }
+
+    public static class HonorExtensions
+    {
+        public static Honor ToHonor(Wind wind)
+        {
+            return (Honor)(wind);
+        }
+
+        public static Honor ToHonor(Dragon dragon)
+        {
+            return (Honor)((int)dragon+(int)Honor.White - 1);
+        }
+    }
+
     public enum Honor
     {
         Unknown,
@@ -42,13 +74,9 @@ namespace MahjongEngine
         South,
         West,
         North,
-        WindStart = East,
-        WindEnd = North,
         White,
         Green,
         Red,
-        DragonStart = White,
-        DragonEnd = Red,
         Max = Red,
     }
 
