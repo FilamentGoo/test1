@@ -39,7 +39,7 @@ namespace MahjongEngine
             {
                 bool outputSuit = true;
                 if(i + 1 < TileCollection.Count &&
-                   TileCollection[i].Suit == TileCollection[i + 1].Suit)
+                   SuitExtensions.IsSameSuit(TileCollection[i].Suit, TileCollection[i + 1].Suit))
                 {
                     outputSuit = false;
                 }

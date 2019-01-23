@@ -8,8 +8,6 @@ namespace MahjongEngine
         public bool AkaDora = true;
         public bool AgariYame = true;
         public bool Shanyu = true;
-
-
         public RuleSet()
         {}
     }
@@ -31,8 +29,10 @@ namespace MahjongEngine
 
         public virtual void Initialize()
         {
+            Tile.DisplayStyle = TileDisplayStyle.Tenhou;
             GenerateTiles();
             GeneratePlayers();
+            Console.WriteLine(TilePool.ToString());
         }
 
         public virtual void GenerateTiles()
@@ -41,13 +41,10 @@ namespace MahjongEngine
             {
                 for(Suit suit = Suit.Unknown + 1; suit <= Suit.Max; suit++)
                 {
-                    for(int tileValue = Tile.TileMinValue; tileValue <= Tile.TileMaxValue; tileValue ++)
+                    for(int tileValue = SuitExtensions.GetMinValue(suit);
+                        tileValue <= SuitExtensions.GetMaxValue(suit);
+                        tileValue ++)
                     {
-                        if(suit == Suit.Jihai && tileValue > (int)Honor.Max)
-                        {
-                            break;
-                        }
-
                         Tile newTile = new Tile(suit, tileValue, false);
                         TilePool.Add(newTile);
                     }

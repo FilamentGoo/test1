@@ -11,8 +11,9 @@ namespace MahjongEngine
         Manzu,
         Pinzu,
         Souzu,
-        Jihai,
-        Max = Jihai,
+        Kazehai,
+        Sangenpai,
+        Max = Sangenpai,
     }
 
     public static class SuitExtensions
@@ -27,12 +28,76 @@ namespace MahjongEngine
                     return "p";
                 case Suit.Souzu:
                     return "s";
-                case Suit.Jihai:
+                case Suit.Sangenpai:
+                case Suit.Kazehai:
                     return "z";
-                    default:
-                throw new InvalidProgramException($"Invalid suit to be shortened {suit.ToString()}");
+                default:
+                    throw new InvalidProgramException($"Invalid suit to be shortened {suit.ToString()}");
             }
         }
+
+        public static int GetMaxValue(Suit suit)
+        {
+            switch(suit)
+            {
+                case Suit.Manzu:
+                case Suit.Pinzu:
+                case Suit.Souzu:
+                    return 9;
+                case Suit.Sangenpai:
+                    return (int)Dragon.Red;
+                case Suit.Kazehai:
+                    return (int)Wind.North;
+                default:
+                    throw new InvalidProgramException($"Invalid suit to retrieve max value {suit.ToString()}");
+            }
+        }
+
+        public static int GetMinValue(Suit suit)
+        {
+            switch(suit)
+            {
+                case Suit.Manzu:
+                case Suit.Pinzu:
+                case Suit.Souzu:
+                    return 1;
+                case Suit.Sangenpai:
+                    return (int)Dragon.White;
+                case Suit.Kazehai:
+                    return (int)Wind.East;
+                default:
+                    throw new InvalidProgramException($"Invalid suit to retrieve max value {suit.ToString()}");
+            }
+        }
+
+        public static bool IsSameSuit(Suit suit1, Suit suit2)
+        {
+            if(IsJihai(suit1) && IsJihai(suit2))
+            {
+                return true;
+            }
+            else
+            {
+                return suit1 == suit2;
+            }
+        }
+ 
+        public static bool IsJihai(Suit suit)
+        {
+            switch(suit)
+            {
+                case Suit.Manzu:
+                case Suit.Pinzu:
+                case Suit.Souzu:
+                    return false;
+                case Suit.Sangenpai:
+                case Suit.Kazehai:
+                    return true;
+                default:
+                    throw new InvalidProgramException($"Invalid suit to determine if jihai {suit.ToString()}");
+            }
+        }
+
     }
 
     public enum Wind
@@ -42,7 +107,7 @@ namespace MahjongEngine
         South,
         West,
         North,
-        Max
+        Max = North
     }
 
     public enum Dragon
@@ -51,33 +116,7 @@ namespace MahjongEngine
         White,
         Green,
         Red,
-        Max
-    }
-
-    public static class HonorExtensions
-    {
-        public static Honor ToHonor(Wind wind)
-        {
-            return (Honor)(wind);
-        }
-
-        public static Honor ToHonor(Dragon dragon)
-        {
-            return (Honor)((int)dragon+(int)Honor.White - 1);
-        }
-    }
-
-    public enum Honor
-    {
-        Unknown,
-        East,
-        South,
-        West,
-        North,
-        White,
-        Green,
-        Red,
-        Max = Red,
+        Max = Red
     }
 
     public enum TileDisplayStyle 
@@ -89,32 +128,30 @@ namespace MahjongEngine
 
     public class Tile : IEquatable<Tile>, IComparable<Tile>
     {
-        public static readonly int TileMinValue = 1;
-        public static readonly int TileMaxValue = 9;
         public readonly Suit Suit;
         public readonly int TileValue;
         public readonly bool IsRedDora;
         public bool IsDora { get; set; }
         public static TileDisplayStyle DisplayStyle = TileDisplayStyle.English;
 
+        public bool IsHonor
+        {
+            get
+            {
+                return SuitExtensions.IsJihai(Suit);
+            }
+        }
         public bool IsTerminal 
         { 
             get 
             {
-                if(this.Suit != Suit.Jihai)
+                if(!this.IsHonor)
                 {
-                    return this.TileValue == TileMinValue ||
-                           this.TileValue == TileMaxValue;
+                    return this.TileValue == SuitExtensions.GetMinValue(Suit) ||
+                           this.TileValue == SuitExtensions.GetMaxValue(Suit);
                 }
                 return false;
             }
-        }
-        public bool IsHonorOrTerminal
-        {
-            get
-            {
-                return this.Suit == Suit.Jihai;
-            } 
         }
 
         protected bool IsValid()
@@ -125,19 +162,28 @@ namespace MahjongEngine
                 return false;
             }
 
-            if(Suit == Suit.Jihai)
+            if(Suit == Suit.Sangenpai)
             {
-                Honor honorValue = (Honor)TileValue;
-                if(honorValue > Honor.Max ||
-                   honorValue <= Honor.Unknown)
+                Dragon dragonValue = (Dragon)TileValue;
+                if(dragonValue > Dragon.Max ||
+                   dragonValue <= Dragon.Unknown)
+                {
+                    return false;
+                }
+            }
+            else if(Suit == Suit.Kazehai)
+            {
+                Wind windValue = (Wind)TileValue;
+                if(windValue > Wind.Max ||
+                   windValue <= Wind.Unknown)
                 {
                     return false;
                 }
             }
             else
             {
-                if(TileValue > TileMaxValue ||
-                   TileValue < TileMinValue)
+                if(TileValue < SuitExtensions.GetMinValue(Suit) ||
+                   TileValue > SuitExtensions.GetMaxValue(Suit))
                 {
                     return false;
                 }
@@ -178,36 +224,49 @@ namespace MahjongEngine
 
         public string TileValueToString()
         {
-            if(Suit != Suit.Jihai ||
+            int tenhouValue = TileValue;
+            if(!this.IsHonor ||
                 DisplayStyle == TileDisplayStyle.Tenhou)
             {
-                return TileValue.ToString();
+                if(this.Suit == Suit.Sangenpai)
+                {
+                    tenhouValue += (int)Wind.Max;
+                }
+                return tenhouValue.ToString();
             }
             else
             {
-                Honor honorValue = (Honor)TileValue;
-                switch(honorValue)
+                if(Suit == Suit.Sangenpai)
                 {
-                    case Honor.East:
-                        return "E";
-                    case Honor.South:
-                        return "S";
-                    case Honor.West:
-                        return "W";
-                    case Honor.North:
-                        return "N";
-                    case Honor.Green:
-                        return "G";
-                    case Honor.Red:
-                        return "R";
-                    case Honor.White:
-                        return "W";
-                    default:
-                        throw new InvalidOperationException($"Tried to print invalid honor value {this.ToString()}");
+                    switch((Dragon)TileValue)
+                    {
+                        case Dragon.Green:
+                            return "G";
+                        case Dragon.Red:
+                            return "R";
+                        case Dragon.White:
+                            return "W";
+                        default:
+                            throw new InvalidOperationException($"Tried to print invalid honor value Suit:{Suit.ToString()} Value:{TileValue}");
+                    }
+                }
+                else
+                {
+                    switch((Wind)TileValue)
+                    {
+                        case Wind.East:
+                            return "E";
+                        case Wind.South:
+                            return "S";
+                        case Wind.West:
+                            return "W";
+                        case Wind.North:
+                            return "N";
+                        default:
+                            throw new InvalidOperationException($"Tried to print invalid honor value Suit:{Suit.ToString()} Value:{TileValue}");
+                    }
                 }
             }
         }
     }
-
-
 }
