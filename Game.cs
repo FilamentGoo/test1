@@ -8,9 +8,21 @@ namespace MahjongEngine
         public bool AkaDora = true;
         public bool AgariYame = true;
         public bool Shanyu = true;
+
         public RuleSet()
         {}
     }
+
+    public class GameProperties
+    {
+        public bool HasScore = false;
+        public int InitialScorePerPlayer = 25000;
+        public bool HasRoundWind = true;
+        public Wind MaxRound = Wind.West;
+        public GameProperties()
+        {}
+    }
+
     public abstract class Game
     {
         private Tiles TilePool;
@@ -19,6 +31,7 @@ namespace MahjongEngine
         protected List<Player> Players;
         protected List<string> PlayerNames;
         protected RuleSet RuleSet;
+        protected Wind CurrentRoundWind;
         public Game(RuleSet ruleSet, List<string> playerNames = null)
         {
             TilePool = new Tiles();
@@ -33,6 +46,7 @@ namespace MahjongEngine
             GenerateTiles();
             GeneratePlayers();
             Console.WriteLine(TilePool.ToString());
+            Players.ForEach(x => Console.WriteLine($"{x.Id}: {x.SeatingWind.ToString()}, {x.SeatWind.ToString()}"));
         }
 
         public virtual void GenerateTiles()
@@ -98,6 +112,7 @@ namespace MahjongEngine
         public FourPlayerGame(RuleSet ruleSet, List<string> playerNames = null) : 
             base(ruleSet, playerNames)
         {
+
             NumPlayers = 4;
         }
     }

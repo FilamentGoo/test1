@@ -12,7 +12,7 @@ namespace MahjongEngine
     {
         public string Id {get; protected set;}
         // this determines player order.
-        public Wind SeatingWind{ get; protected set;}
+        public Wind SeatingWind { get; protected set;}
         public Hand Hand {get;}
         public int Score { get; set;}
         public bool IsDealer 
