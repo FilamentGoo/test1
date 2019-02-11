@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MahjongEngine
 {
@@ -19,23 +20,25 @@ namespace MahjongEngine
         public int InitialScorePerPlayer = 25000;
         public bool HasRoundWind = true;
         public Wind MaxRound = Wind.West;
+        public int NumDuplicatesPerTile = 4;
         public GameProperties()
         {}
     }
 
-    public abstract class Game
+    public class Game
     {
         private Tiles TilePool;
-        protected int NumDuplicatesPerTile;
         protected int NumPlayers;
         protected List<Player> Players;
         protected List<string> PlayerNames;
         protected RuleSet RuleSet;
+        protected GameProperties Properties;
         protected Wind CurrentRoundWind;
         public Game(RuleSet ruleSet, List<string> playerNames = null)
         {
             TilePool = new Tiles();
             Players  = new List<Player>();
+            Properties = new GameProperties();
             RuleSet  = ruleSet;
             PlayerNames = playerNames;
         }
@@ -46,12 +49,26 @@ namespace MahjongEngine
             GenerateTiles();
             GeneratePlayers();
             Console.WriteLine(TilePool.ToString());
-            Players.ForEach(x => Console.WriteLine($"{x.Id}: {x.SeatingWind.ToString()}, {x.SeatWind.ToString()}"));
+            Players.ForEach(x => Console.WriteLine($"{x.Id}: {x.SeatingWind.ToString()}, {x.SeatWind.ToString()}")); 
+        }
+
+        public virtual void Execute()
+        {
+            Round round = GenerateRound();
+            round.Execute();
+        }
+
+        public virtual Round GenerateRound()
+        {
+            Round round = new Round(this);
+            ScoredGame scoredgame = new ScoredGame(round, this);
+            FourPlayerGame fourplayergame = new FourPlayerGame(scoredgame, this);
+            return fourplayergame;
         }
 
         public virtual void GenerateTiles()
         {
-            for(int iterations = 0; iterations < NumDuplicatesPerTile; iterations++)
+            for(int iterations = 0; iterations < Properties.NumDuplicatesPerTile; iterations++)
             {
                 for(Suit suit = Suit.Unknown + 1; suit <= Suit.Max; suit++)
                 {
@@ -95,25 +112,84 @@ namespace MahjongEngine
                 currentWind++;
             }
         }
-
     }
 
-    public abstract class ScoredGame : Game
+    public enum RoundResult
     {
-        public ScoredGame(RuleSet ruleSet, List<string> playerNames = null) :
-            base(ruleSet, playerNames)
+        Unknown,
+        DealerWin,
+        DealerLoss,
+        AbortiveDraw
+    }
+
+    public abstract class Round
+    {
+        public Game Game;
+        public GameProperties GameProperties;
+
+        public Round(Game game)
         {
-            NumDuplicatesPerTile = 4;
+            Game = game;
+
+        }
+
+        public RoundResult Execute()
+        {
+            DistributeTiles();
+            return RoundResult.Unknown;
+        }
+
+        public abstract void DistributeTiles();
+
+        public virtual void PlayerDiscardDecision()
+        {
+
+        }
+
+        public virtual void PlayerCallDecision()
+        {
+
+        }
+
+        public virtual void CalculateScores()
+        {
+
         }
     }
 
-    public class FourPlayerGame : ScoredGame
+    public abstract class RoundDecorator : Round
     {
-        public FourPlayerGame(RuleSet ruleSet, List<string> playerNames = null) : 
-            base(ruleSet, playerNames)
+        public Round BaseRound = null;
+
+        protected RoundDecorator(Round round, Game game) : base(game)
+        {
+            BaseRound = round;
+        }
+    }
+
+    public abstract class TwoPlayerGame : RoundDecorator
+    {
+        public TwoPlayerGame(Round round, Game game) : base(round, game)
         {
 
-            NumPlayers = 4;
+        }
+
+        public override void DistributeTiles()
+        {
+
+        }
+    }
+
+    public abstract class FourPlayerGame : RoundDecorator
+    {
+        public FourPlayerGame(Round round, Game game) : base(round, game)
+        {
+
+        }
+
+        public override void DistributeTiles()
+        {
+            
         }
     }
 }

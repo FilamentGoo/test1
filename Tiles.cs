@@ -31,10 +31,22 @@ namespace MahjongEngine
             TileCollection.Sort();
         }
 
+        public void Shuffle()
+        {
+            Utils.Shuffle(TileCollection);
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            Suit currentSuit = TileCollection[0].Suit;
+            Suit currentSuit;
+            
+            if(TileCollection.Count == 0)
+            {
+                return String.Empty;
+            }
+
+            currentSuit = TileCollection[0].Suit;
             for(int i = 0; i < TileCollection.Count; i++)
             {
                 bool outputSuit = true;

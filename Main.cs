@@ -7,8 +7,9 @@ namespace MahjongEngine
         static void Main(string[] args)
         {
             RuleSet ruleset = new RuleSet();
-            FourPlayerGame game = new FourPlayerGame(ruleset);
+            Game game = new Game(ruleset);
             game.Initialize();
+            game.Execute();
             Console.WriteLine("done");
             Console.ReadLine();
         }
