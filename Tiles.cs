@@ -22,12 +22,29 @@ namespace MahjongEngine
         public void Add(Tile newTile)
         {
             TileCollection.Add(newTile);
-            TileCollection.Sort();
         }
 
         public void Add(Tiles newTiles)
         {
             TileCollection.AddRange(newTiles);
+        }
+
+        public void Add(IEnumerable<Tile> newTiles)
+        {
+            TileCollection.AddRange(newTiles);
+        }
+
+        public Tiles TakeTiles(int count)
+        {
+            Tiles takenTiles = new Tiles();
+            takenTiles.Add(this.Take(count));
+            TileCollection.RemoveRange(0, count);
+
+            return takenTiles;
+        }
+
+        public void Sort()
+        {
             TileCollection.Sort();
         }
 

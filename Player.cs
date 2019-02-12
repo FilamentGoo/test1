@@ -5,7 +5,16 @@ namespace MahjongEngine
 {
     public class Hand
     {
-
+        public Tiles ClosedHand;
+        public List<Tiles> OpenHand;
+        //For sanma, for instance
+        public Tiles ExtraTiles;
+        public Hand()
+        {
+            ClosedHand = new Tiles();
+            OpenHand = new List<Tiles>();
+            ExtraTiles = new Tiles();
+        }
     }
 
     public class Player : IEquatable<Player>
@@ -13,7 +22,7 @@ namespace MahjongEngine
         public string Id {get; protected set;}
         // this determines player order.
         public Wind SeatingWind { get; protected set;}
-        public Hand Hand {get;}
+        public Hand Hand {get; private set}
         public int Score { get; set;}
         public bool IsDealer 
         { 
@@ -34,6 +43,11 @@ namespace MahjongEngine
         public bool Equals(Player other)
         {
             return Id == other.Id;
+        }
+
+        public void InitializeHand()
+        {
+            Hand = new Hand();
         }
     }
 }

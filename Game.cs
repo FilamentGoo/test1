@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace MahjongEngine
 {
@@ -21,15 +22,16 @@ namespace MahjongEngine
         public bool HasRoundWind = true;
         public Wind MaxRound = Wind.West;
         public int NumDuplicatesPerTile = 4;
+        public int DeadWallSize = 14;
         public GameProperties()
         {}
     }
 
     public class Game
     {
-        private Tiles TilePool;
+        public Tiles TilePool;
         protected int NumPlayers;
-        protected List<Player> Players;
+        public List<Player> Players;
         protected List<string> PlayerNames;
         protected RuleSet RuleSet;
         protected GameProperties Properties;
@@ -81,6 +83,8 @@ namespace MahjongEngine
                     }
                 }
             }
+
+            TilePool.Sort();
         }
 
         public virtual void GeneratePlayers()
@@ -126,19 +130,24 @@ namespace MahjongEngine
     {
         public Game Game;
         public GameProperties GameProperties;
+        public Player CurrentDiscard;
+        public Tiles Wall;
 
         public Round(Game game)
         {
             Game = game;
-
+            Wall = new Tiles();
         }
 
         public RoundResult Execute()
         {
             DistributeTiles();
+            Debug.Assert(Wall != null && Wall.Count() != 0);
+            
             return RoundResult.Unknown;
         }
 
+        public abstract void Reset();
         public abstract void DistributeTiles();
 
         public virtual void PlayerDiscardDecision()
@@ -147,6 +156,11 @@ namespace MahjongEngine
         }
 
         public virtual void PlayerCallDecision()
+        {
+
+        }
+
+        public virtual void ResolveDiscard()
         {
 
         }
@@ -182,14 +196,31 @@ namespace MahjongEngine
 
     public abstract class FourPlayerGame : RoundDecorator
     {
+        Tiles DeadWall;
         public FourPlayerGame(Round round, Game game) : base(round, game)
         {
 
         }
 
+        public override void Reset()
+        {
+            DeadWall = new Tiles();
+            BaseRound.Reset();
+        }
+
         public override void DistributeTiles()
         {
-            
+            foreach(Player player in Game.Players)
+            {
+                player.InitializeHand();
+            }
+
+            Tiles pool = new Tiles();
+            pool.Add(Game.TilePool);
+
+            pool.Shuffle();
+
+            DeadWall = pool.TakeTiles(GameProperties.DeadWallSize);
         }
     }
 }
