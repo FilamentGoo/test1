@@ -15,6 +15,12 @@ namespace MahjongEngine
             OpenHand = new List<Tiles>();
             ExtraTiles = new Tiles();
         }
+
+        public void AddClosedTiles(Tiles newTiles)
+        {
+            ClosedHand.Add(newTiles);
+            ClosedHand.Sort();
+        }
     }
 
     public class Player : IEquatable<Player>
@@ -22,7 +28,7 @@ namespace MahjongEngine
         public string Id {get; protected set;}
         // this determines player order.
         public Wind SeatingWind { get; protected set;}
-        public Hand Hand {get; private set}
+        public Hand Hand {get; private set;}
         public int Score { get; set;}
         public bool IsDealer 
         { 

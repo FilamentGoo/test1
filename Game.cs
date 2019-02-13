@@ -23,6 +23,7 @@ namespace MahjongEngine
         public Wind MaxRound = Wind.West;
         public int NumDuplicatesPerTile = 4;
         public int DeadWallSize = 14;
+        public int StartingHandSize = 13;
         public GameProperties()
         {}
     }
@@ -30,11 +31,11 @@ namespace MahjongEngine
     public class Game
     {
         public Tiles TilePool;
-        protected int NumPlayers;
+        protected int NumPlayers = 4;
         public List<Player> Players;
         protected List<string> PlayerNames;
         protected RuleSet RuleSet;
-        protected GameProperties Properties;
+        public GameProperties Properties;
         protected Wind CurrentRoundWind;
         public Game(RuleSet ruleSet, List<string> playerNames = null)
         {
@@ -63,8 +64,7 @@ namespace MahjongEngine
         public virtual Round GenerateRound()
         {
             Round round = new Round(this);
-            ScoredGame scoredgame = new ScoredGame(round, this);
-            FourPlayerGame fourplayergame = new FourPlayerGame(scoredgame, this);
+            FourPlayerGame fourplayergame = new FourPlayerGame(round, this);
             return fourplayergame;
         }
 
@@ -126,7 +126,7 @@ namespace MahjongEngine
         AbortiveDraw
     }
 
-    public abstract class Round
+    public class Round
     {
         public Game Game;
         public GameProperties GameProperties;
@@ -136,6 +136,7 @@ namespace MahjongEngine
         public Round(Game game)
         {
             Game = game;
+            GameProperties = Game.Properties;
             Wall = new Tiles();
         }
 
@@ -147,8 +148,12 @@ namespace MahjongEngine
             return RoundResult.Unknown;
         }
 
-        public abstract void Reset();
-        public abstract void DistributeTiles();
+        public virtual void Reset()
+        {}
+        public virtual void DistributeTiles()
+        {
+
+        }
 
         public virtual void PlayerDiscardDecision()
         {
@@ -194,7 +199,7 @@ namespace MahjongEngine
         }
     }
 
-    public abstract class FourPlayerGame : RoundDecorator
+    public class FourPlayerGame : RoundDecorator
     {
         Tiles DeadWall;
         public FourPlayerGame(Round round, Game game) : base(round, game)
@@ -221,6 +226,16 @@ namespace MahjongEngine
             pool.Shuffle();
 
             DeadWall = pool.TakeTiles(GameProperties.DeadWallSize);
+
+            foreach(Player player in Game.Players)
+            {
+                player.Hand.AddClosedTiles(pool.TakeTiles(GameProperties.StartingHandSize));
+                Console.WriteLine($"Player:{player.Id}: {player.Hand.ClosedHand.ToString()}");
+            }
+
+            Console.WriteLine($"Wall({pool.Count()}):{pool.ToString()}");
+            Console.WriteLine($"DeadWall({DeadWall.Count()}):{DeadWall.ToString()}");
+            Wall = pool;
         }
     }
 }
