@@ -9,11 +9,11 @@ namespace MahjongEngine
         public List<Tiles> OpenHand;
         //For sanma, for instance
         public Tiles ExtraTiles;
-        public Hand()
+        public Hand(Player player)
         {
-            ClosedHand = new Tiles();
+            ClosedHand = new Tiles(player);
             OpenHand = new List<Tiles>();
-            ExtraTiles = new Tiles();
+            ExtraTiles = new Tiles(player);
         }
 
         public void AddClosedTiles(Tiles newTiles)
@@ -53,7 +53,7 @@ namespace MahjongEngine
 
         public void InitializeHand()
         {
-            Hand = new Hand();
+            Hand = new Hand(this);
         }
     }
 }

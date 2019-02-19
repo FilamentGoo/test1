@@ -22,8 +22,8 @@ namespace MahjongEngine
         public bool HasRoundWind = true;
         public Wind MaxRound = Wind.West;
         public int NumDuplicatesPerTile = 4;
-        public int DeadWallSize = 14;
         public int StartingHandSize = 13;
+        public int DeadWallSize = 14;
         public GameProperties()
         {}
     }
@@ -58,6 +58,7 @@ namespace MahjongEngine
         public virtual void Execute()
         {
             Round round = GenerateRound();
+            round.Initialize();
             round.Execute();
         }
 
@@ -140,12 +141,18 @@ namespace MahjongEngine
             Wall = new Tiles();
         }
 
-        public RoundResult Execute()
+        public void Initialize()
         {
+            Reset();
             DistributeTiles();
             Debug.Assert(Wall != null && Wall.Count() != 0);
+        }
+
+        public RoundResult Execute()
+        {
+            RoundResult result = RoundResult.Unknown;
             
-            return RoundResult.Unknown;
+            return result;
         }
 
         public virtual void Reset()
@@ -155,12 +162,17 @@ namespace MahjongEngine
 
         }
 
-        public virtual void PlayerDiscardDecision()
+        public Tile PlayerDiscardDecision(Tile newTile)
         {
-
+            return null;
         }
 
-        public virtual void PlayerCallDecision()
+        public Tile PlayerCallDiscardDecision()
+        {
+            return null;
+        }
+
+        public void PlayerCallDecision()
         {
 
         }
@@ -201,15 +213,15 @@ namespace MahjongEngine
 
     public class FourPlayerGame : RoundDecorator
     {
-        Tiles DeadWall;
+        DeadWall DeadWall;
         public FourPlayerGame(Round round, Game game) : base(round, game)
         {
-
+            DeadWall = new DeadWall(GameProperties.DeadWallSize);
         }
 
         public override void Reset()
         {
-            DeadWall = new Tiles();
+            DeadWall = new DeadWall(GameProperties.DeadWallSize);
             BaseRound.Reset();
         }
 
@@ -225,7 +237,7 @@ namespace MahjongEngine
 
             pool.Shuffle();
 
-            DeadWall = pool.TakeTiles(GameProperties.DeadWallSize);
+            DeadWall.SetNewDeadWall(pool.TakeTiles(GameProperties.DeadWallSize));
 
             foreach(Player player in Game.Players)
             {
