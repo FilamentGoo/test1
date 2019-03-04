@@ -52,7 +52,7 @@ namespace MahjongEngine
             GenerateTiles();
             GeneratePlayers();
             Console.WriteLine(TilePool.ToString());
-            Players.ForEach(x => Console.WriteLine($"{x.Id}: {x.SeatingWind.ToString()}, {x.SeatWind.ToString()}")); 
+            Players.ForEach(x => Console.WriteLine($"{x.Id}: {x.SeatingWind.ToString()}, {x.SeatWind.ToString()}. {x.NextPlayer.Id}")); 
         }
 
         public virtual void Execute()
@@ -108,12 +108,18 @@ namespace MahjongEngine
                 }
             }
 
-            Utils.Shuffle(PlayerNames);
+            foreach(string name in PlayerNames)
+            {
+                Players.Add(new Player(name));
+            }
+
+            Utils.Shuffle(Players);
 
             Wind currentWind = Wind.East;
             for(int iterations = 0; iterations < PlayerNames.Count; iterations++)
             {
-                Players.Add(new Player(PlayerNames[iterations], currentWind));
+                Players[iterations].SetSeatingWind(currentWind);
+                Players[iterations].NextPlayer = Players[(iterations + 1) % Players.Count()];
                 currentWind++;
             }
         }
@@ -129,11 +135,21 @@ namespace MahjongEngine
 
     public class Round
     {
+        private enum RoundPhase
+        {
+            Unknown,
+            PlayerDraw,
+            PlayerRinshan,
+            PlayerSelfKan,
+            PlayerDiscard,
+            PlayerCall,
+            RoundEnd
+        }
         public Game Game;
         public GameProperties GameProperties;
         public Player CurrentDiscard;
         public Tiles Wall;
-
+        private RoundResult Result; 
         public Round(Game game)
         {
             Game = game;
@@ -150,9 +166,41 @@ namespace MahjongEngine
 
         public RoundResult Execute()
         {
-            RoundResult result = RoundResult.Unknown;
-            
-            return result;
+            Result = RoundResult.Unknown;
+            RoundPhase phase = RoundPhase.PlayerDraw;
+            CurrentDiscard = Game.Players.Where(x => x.IsDealer).FirstOrDefault();
+            Debug.Assert(CurrentDiscard != null);
+
+            while(Result == RoundResult.Unknown)
+            {
+                phase = ExecuteInternal(phase);
+            }
+
+            return Result;
+        }
+
+        private RoundPhase ExecuteInternal(RoundPhase phase)
+        {
+            RoundPhase nextPhase = phase;
+            switch(phase)
+            {
+                case RoundPhase.PlayerDraw:
+                    nextPhase = RoundPhase.PlayerDiscard;
+                    CurrentDiscard.Hand.Draw(Wall.Take(1).FirstOrDefault());
+                    break;
+                case RoundPhase.PlayerDiscard:
+                    break;
+                case RoundPhase.PlayerSelfKan:
+                    break;
+                case RoundPhase.PlayerRinshan:
+                    break;
+                case RoundPhase.PlayerCall:
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+            return nextPhase;
         }
 
         public virtual void Reset()

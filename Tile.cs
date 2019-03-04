@@ -133,6 +133,7 @@ namespace MahjongEngine
         public readonly bool IsRedDora;
         public bool IsDora { get; set; }
         public static TileDisplayStyle DisplayStyle = TileDisplayStyle.English;
+        public bool IsTsumogiri {get;set;}
 
         public bool IsHonor
         {
