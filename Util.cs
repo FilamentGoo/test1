@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MahjongEngine 
 {
@@ -21,6 +22,12 @@ namespace MahjongEngine
         public static int GetRandom(int high)
         {
             return GetRandom(0, high);
+        }
+
+        public static T GetRandom<T>(IEnumerable<T> Collection)
+        {
+            List<T> list = Collection.ToList();
+            return list[GetRandom(0, list.Count)];
         }
 
         public static List<T> Shuffle<T>(List<T> collection)

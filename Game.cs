@@ -28,6 +28,15 @@ namespace MahjongEngine
         {}
     }
 
+    public delegate void RequestRender();
+
+    public struct DecisionCallbacks
+    {
+        public ExecutePlayerDiscardDecision DiscardDecisionCallback;
+        public ExecutePlayerCallDecision CallDecisionCallback;
+        public RequestRender RenderCallback;
+    }
+
     public class Game
     {
         public Tiles TilePool;
@@ -36,19 +45,22 @@ namespace MahjongEngine
         protected List<string> PlayerNames;
         protected RuleSet RuleSet;
         public GameProperties Properties;
-        protected Wind CurrentRoundWind;
-        public Game(RuleSet ruleSet, List<string> playerNames = null)
+        public Wind CurrentRoundWind;
+        public DecisionCallbacks Callbacks;
+
+        public Game(RuleSet ruleSet, DecisionCallbacks callbacks,List<string> playerNames = null)
         {
-            TilePool = new Tiles();
-            Players  = new List<Player>();
-            Properties = new GameProperties();
-            RuleSet  = ruleSet;
+            TilePool    = new Tiles();
+            Players     = new List<Player>();
+            Properties  = new GameProperties();
+            RuleSet     = ruleSet;
             PlayerNames = playerNames;
+            Callbacks   = callbacks;
         }
 
         public virtual void Initialize()
         {
-            Tile.DisplayStyle = TileDisplayStyle.Tenhou;
+            Tile.DisplayStyle = TileDisplayStyle.English;
             GenerateTiles();
             GeneratePlayers();
             Console.WriteLine(TilePool.ToString());
@@ -104,7 +116,7 @@ namespace MahjongEngine
                 int playersToCreate = NumPlayers - PlayerNames.Count;
                 for(int iterations = 0; iterations < playersToCreate; iterations++)
                 {
-                    PlayerNames.Add(iterations.ToString());
+                    PlayerNames.Add($"Player {iterations.ToString()}");
                 }
             }
 
@@ -116,12 +128,24 @@ namespace MahjongEngine
             Utils.Shuffle(Players);
 
             Wind currentWind = Wind.East;
+            CurrentRoundWind = Wind.East;
             for(int iterations = 0; iterations < PlayerNames.Count; iterations++)
             {
+                Players[iterations].Game       = this;
                 Players[iterations].SetSeatingWind(currentWind);
+
                 Players[iterations].NextPlayer = Players[(iterations + 1) % Players.Count()];
+                Players[iterations].Score      = 25000;
                 currentWind++;
             }
+        }
+
+        public int GetRoundNumber()
+        {
+            Player initialDealer = Players.Where(x => x.SeatingWind == Wind.East).First();
+            int diff = ((int)initialDealer.SeatWind - (int)initialDealer.SeatingWind + 4 ) % 4;
+
+            return diff + 1;
         }
     }
 
@@ -189,12 +213,15 @@ namespace MahjongEngine
                     CurrentDiscard.Hand.Draw(Wall.Take(1).FirstOrDefault());
                     break;
                 case RoundPhase.PlayerDiscard:
+                    Game.Callbacks.RenderCallback();
+                    CurrentDiscard.DiscardOrCall();
                     break;
                 case RoundPhase.PlayerSelfKan:
                     break;
                 case RoundPhase.PlayerRinshan:
                     break;
                 case RoundPhase.PlayerCall:
+                    Game.Callbacks.RenderCallback();
                     break;
                 default:
                     Debug.Assert(false);
@@ -204,7 +231,10 @@ namespace MahjongEngine
         }
 
         public virtual void Reset()
-        {}
+        {
+            
+        }
+
         public virtual void DistributeTiles()
         {
 

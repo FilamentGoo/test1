@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace MahjongEngine
 {
+
     class Program
     {
         static void Main(string[] args)
         {
-            RuleSet ruleset = new RuleSet();
-            Game game = new Game(ruleset);
-            game.Initialize();
-            game.Execute();
+            Controller controller = new Controller();
+
             Console.WriteLine("done");
             Console.ReadLine();
         }
+
+
     }
 }

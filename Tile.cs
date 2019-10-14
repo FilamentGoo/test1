@@ -107,7 +107,7 @@ namespace MahjongEngine
         South,
         West,
         North,
-        Max = North
+        Max
     }
 
     public enum Dragon
@@ -116,7 +116,7 @@ namespace MahjongEngine
         White,
         Green,
         Red,
-        Max = Red
+        Max
     }
 
     public enum TileDisplayStyle 
@@ -220,7 +220,14 @@ namespace MahjongEngine
 
         public override string ToString()
         {
-            return $"{TileValueToString()}{SuitExtensions.ToShortenedString(Suit)}";
+            if(this.IsHonor && DisplayStyle != TileDisplayStyle.Tenhou)
+            {
+                return $"{TileValueToString()}";
+            }
+            else
+            {
+                return $"{TileValueToString()}{SuitExtensions.ToShortenedString(Suit)}";
+            }
         }
 
         public string TileValueToString()
@@ -231,7 +238,7 @@ namespace MahjongEngine
             {
                 if(this.Suit == Suit.Sangenpai)
                 {
-                    tenhouValue += (int)Wind.Max;
+                    tenhouValue += (int)Wind.North;
                 }
                 return tenhouValue.ToString();
             }
